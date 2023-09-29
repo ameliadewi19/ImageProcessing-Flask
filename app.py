@@ -126,14 +126,14 @@ def grayscale():
 @nocache
 def zoomin():
     image_processing.zoomin()
-    return render_template("uploaded.html", file_path="img/img_now.jpg")
+    return render_template("zoom.html", file_path="img/img_now.jpg")
 
 
 @app.route("/zoomout", methods=["POST"])
 @nocache
 def zoomout():
     image_processing.zoomout()
-    return render_template("uploaded.html", file_path="img/img_now.jpg")
+    return render_template("zoom.html", file_path="img/img_now.jpg")
 
 
 @app.route("/move_left", methods=["POST"])
@@ -238,6 +238,50 @@ def thresholding():
     image_processing.threshold(lower_thres, upper_thres)
     return render_template("uploaded.html", file_path="img/img_now.jpg")
 
+@app.route("/mean_blur", methods=["POST"])
+def mean_blur():
+    kernel_size = int(request.form.get("kernel_size"))
+    image_processing.mean_blur(kernel_size)
+    return render_template("uploaded.html", file_path="img/img_now.jpg")
+
+@app.route("/gaussian_blur", methods=["POST"])
+def gaussian_blur():
+    kernel_size = int(request.form.get("kernel_size"))
+    image_processing.gaussian_blur(kernel_size)
+    return render_template("uploaded.html", file_path="img/img_now.jpg")
+
+@app.route("/median_blur", methods=["POST"])
+def median_blur():
+    kernel_size = int(request.form.get("kernel_size"))
+    image_processing.median_blur(kernel_size)
+    return render_template("uploaded.html", file_path="img/img_now.jpg")
+
+
+@app.route("/identitas", methods=["POST"])
+@nocache
+def identitas():
+    image_processing.apply_identity()
+    return render_template("uploaded.html", file_path="img/img_now.jpg")
+
+@app.route("/bilateral_filter", methods=["POST"])
+def bilateral_filter():
+    image_processing.bilateral_filter()
+    return render_template("uploaded.html", file_path="img/img_now.jpg")
+
+@app.route("/zero_padding", methods=["POST"])
+def zero_padding():
+    image_processing.zero_padding()
+    return render_template("uploaded.html", file_path="img/img_now.jpg")
+
+@app.route("/apply_random_kernel", methods=["POST"])
+def apply_random_kernel():
+    kernel_size = int(request.form.get("kernel_size"))
+    kernel_type = request.form.get("kernel_type")
+
+    kernel = image_processing.generate_and_apply_kernel(kernel_type, kernel_size)
+    # image_processing.apply_filter("static/img/img_now.jpg", kernel)
+
+    return render_template("uploaded.html", file_path="img/img_now.jpg")
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0")

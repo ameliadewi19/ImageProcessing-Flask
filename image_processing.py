@@ -440,3 +440,88 @@ def get_image_values(image_path):
         print(f"Error: {e}")
         return [], None, None
 
+def mean_blur(kernel_size):
+    img = Image.open("static/img/img_now.jpg")
+    img_arr = np.asarray(img, dtype=np.uint8)
+    kernel = np.ones((kernel_size, kernel_size), np.float32) / (kernel_size**2)
+    blur = cv2.filter2D(src=img_arr, ddepth=-1, kernel=kernel)
+    new_img = Image.fromarray(blur)
+    new_img.save("static/img/img_now.jpg")
+
+def gaussian_blur(kernel_size):
+    img = Image.open("static/img/img_now.jpg")
+    img_arr = np.asarray(img, dtype=np.uint8)
+    blur = cv2.GaussianBlur(img_arr, (kernel_size, kernel_size), sigmaX=0)
+    new_img = Image.fromarray(blur)
+    new_img.save("static/img/img_now.jpg")
+
+def median_blur(kernel_size):
+    img = Image.open("static/img/img_now.jpg")
+    img_arr = np.asarray(img, dtype=np.uint8)
+    blur = cv2.medianBlur(img_arr, kernel_size)
+    new_img = Image.fromarray(blur)
+    new_img.save("static/img/img_now.jpg")
+
+def apply_identity():
+    img = Image.open("static/img/img_now.jpg")
+    img_arr = np.asarray(img, dtype=np.int64)
+    kernel = np.array([[0, 0, 0],
+                       [0, 1, 0],
+                       [0, 0, 0]])
+    new_arr = convolution(img_arr, kernel)
+    new_img = Image.fromarray(new_arr)
+    new_img.save("static/img/img_now.jpg")
+
+def bilateral_filter():
+    img = Image.open("static/img/img_now.jpg")
+    img_arr = np.asarray(img, dtype=np.uint8)
+    bf = cv2.bilateralFilter(src=img_arr, d=9, sigmaColor=75, sigmaSpace=75)
+    new_img = Image.fromarray(bf)
+    new_img.save("static/img/img_now.jpg")
+
+def zero_padding():
+    image_path = "static/img/img_now.jpg"  # Ganti dengan path gambar yang Anda gunakan
+    img = Image.open(image_path)
+    img_arr = np.asarray(img, dtype=np.uint8)
+    padded_image = cv2.copyMakeBorder(img_arr, 1, 1, 1, 1, cv2.BORDER_CONSTANT, value=0)
+    new_img = Image.fromarray(padded_image)
+    new_img.save("static/img/img_now.jpg")
+
+def apply_filter(image_path, kernel, kernel_type):
+    img = Image.open(image_path)
+    if (kernel_type == "highpass"):
+        img_arr = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+    else:
+        img_arr = np.asarray(img, dtype=np.uint8)
+    filtered_image = cv2.filter2D(src=img_arr, ddepth=-1, kernel=kernel)
+    new_img = Image.fromarray(filtered_image)
+    new_img.save("static/img/img_now.jpg")
+
+def generate_random_kernel(size):
+    return np.random.rand(size, size)
+
+def lowpass_kernel(size):
+    kernel = generate_random_kernel(size)
+    return kernel / np.sum(kernel)
+
+def highpass_kernel(size):
+    return np.identity(size) - lowpass_kernel(size)
+
+def bandpass_kernel(size, low_cutoff, high_cutoff):
+    highpass = highpass_kernel(size)
+    lowpass = lowpass_kernel(size)
+    return high_cutoff * highpass - low_cutoff * lowpass
+
+def generate_and_apply_kernel(kernel_type, kernel_size):
+    if kernel_type == "lowpass":
+        kernel = lowpass_kernel(kernel_size)
+    elif kernel_type == "highpass":
+        kernel = highpass_kernel(kernel_size)
+    elif kernel_type == "bandpass":
+        low_cutoff = 0.1
+        high_cutoff = 0.9
+        kernel = bandpass_kernel(kernel_size, low_cutoff, high_cutoff)
+    else:
+        raise ValueError("Invalid kernel type. Use 'lowpass', 'highpass', or 'bandpass'.")
+
+    apply_filter("static/img/img_now.jpg", kernel, kernel_type)

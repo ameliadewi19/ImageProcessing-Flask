@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block body %}
+<div class="neader" style="height: 120px; background-color: #305fe8;">
+    <!-- <img src="{{ url_for('static', filename='images/blob.svg') }}" alt="" class="img-fluid blob"> -->
+    
+</div>
+
+<div class="text-center mt-4 pt-4" style="color: black;">
+    <div class="container px-0">
+        <div class="row">
+            {% include "includes/_sidebar.html" %}
+
+            <div class="col-md-9 order-md-2">
+                <h3 style="font-weight: bold;">Before</h3>
+                <img class="img-fluid" src="static/img/img_normal.jpg" alt="image here">
+
+                <h3 class="mt-5" style="font-weight: bold;">After</h3>
+                <img class="img-fluid" src="{{ url_for('static', filename=file_path) }}" alt="image here">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
