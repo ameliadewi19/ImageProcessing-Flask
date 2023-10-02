@@ -8,6 +8,23 @@
             
             <li class="nav-item">
                 <a class="nav-link" href="#submenu1" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="submenu1">
+                    Game Card<i class="fas fa-caret-down"></i>
+                </a>
+                <div id="submenu1" class="collapse">
+                    <hr>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mt-2 bd-highlight">
+                                <form id="" action="{{ url_for('game_card') }}" method="POST" enctype="multipart/form-data">
+                                    <button type="submit" class="btn btn-primary custom-button" style="width: 100%;">Game Card</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <hr>
+                </div>
+
+                <a class="nav-link" href="#submenu1" data-toggle="collapse" role="button" aria-expanded="false" aria-controls="submenu1">
                     Normal<i class="fas fa-caret-down"></i>
                 </a>
                 <div id="submenu1" class="collapse">

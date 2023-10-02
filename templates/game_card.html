@@ -1,0 +1,253 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<style>
+    .custom-button {
+        font-family: Arial, Helvetica, sans-serif;
+        text-transform: none; 
+        padding-left: 2px;
+        padding-right: 2px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+    .custom-input {
+        width: 50%; 
+        height: 38px; 
+        padding-left: 10px;
+    }
+
+    .game-board {
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 600px;
+        margin: auto;
+        margin-top: 20px;
+    }
+
+    .card {
+        width: 100px;
+        height: 100px;
+        margin: 10px;
+        background: #f0f0f0;
+        border: 2px solid #ccc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        cursor: pointer;
+        transition: transform 0.3s;
+        overflow: hidden;
+    }
+
+    .card.flipped {
+        transform: rotateY(180deg);
+    }
+
+    .card .hidden-image {
+        display: none;
+    }
+
+    .card.flipped .hidden-image {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .card .hidden-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .matched-card {
+    display: none;
+}
+</style>
+
+<div class="header" style="height: 120px; background-color: #305fe8;">
+    <!-- <img src="{{ url_for('static', filename='images/blob.svg') }}" alt="" class="img-fluid blob"> -->
+    
+</div>
+
+<div class="text-center mt-4 pt-4" style="color: black;">
+    <div class="container px-0">
+        <div class="row">
+            {% include "includes/_sidebar.html" %}
+
+            <div class="col-md-9 order-md-2">
+                <div id="score">Skor: 0</div>
+                <div class="game-board" id="gameBoard">
+                    {% for image in paired_images %}
+                    <div class="card" data-img="{{ image }}">
+                        <div class="hidden-image">
+                            <img src="{{ image }}" style="width: 100%; height: 100%; object-fit: cover;" />
+                        </div>
+                    </div>                    
+                    {% endfor %}
+                </div>
+                <div id="hint-button">
+                    <button onclick="solvePair()">Hint</button>
+                </div>
+                <div id="solve-all-button">
+                    <button onclick="solveAll()">Solve All</button>
+                </div>
+           </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.card');
+    let flippedCards = [];
+    let matchedCards = [];
+    let solving = false;
+    let score = 0;
+
+    const hintButton = document.getElementById('hint-button');
+    hintButton.addEventListener('click', solvePair);
+
+    const solveAllButton = document.getElementById('solve-all-button');
+    solveAllButton.addEventListener('click', solveAll);
+
+    cards.forEach(card => card.addEventListener('click', flipCard));
+
+    function flipCard() {
+        console.log(this.dataset.img);
+        if (flippedCards.length < 2 && !flippedCards.includes(this) && !matchedCards.includes(this)) {
+            this.classList.add('flipped');
+            flippedCards.push(this);
+
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 1000);
+            }
+        }
+    }
+
+    function updateScore() {
+        if (!solving) {
+            const scoreElement = document.getElementById('score');
+            scoreElement.textContent = `Skor: ${score}`;
+            console.log(score);
+        }
+    }
+
+    function checkMatch() {
+        const [card1, card2] = flippedCards;
+        if (card1.dataset.img === card2.dataset.img) {
+            matchedCards.push(card1, card2);
+            flippedCards = [];
+            if (!solving) { // Tambahkan skor hanya jika bukan saat sedang menyelesaikan kartu
+                score += 1; // Tambahkan skor jika kartu cocok
+                updateScore();
+            }
+
+            card1.classList.add('matched-card'); // Tambahkan kelas untuk menyembunyikan kartu
+            card2.classList.add('matched-card');
+
+            if (matchedCards.length === cards.length) {
+                alert(`Selamat! Anda menang! Skor Anda adalah ${score}`);
+            }
+        } else {
+            card1.classList.remove('flipped');
+            card2.classList.remove('flipped');
+            flippedCards = [];
+        }
+    }
+
+    function solvePair() {
+    const unmatchedCards = Array.from(cards).filter(card => !matchedCards.includes(card) && !flippedCards.includes(card));
+    
+    solving = true;
+    let matchingPair = null;
+
+    for (let i = 0; i < unmatchedCards.length; i++) {
+        for (let j = i + 1; j < unmatchedCards.length; j++) {
+            if (unmatchedCards[i].dataset.img === unmatchedCards[j].dataset.img) {
+                matchingPair = [unmatchedCards[i], unmatchedCards[j]];
+                break;
+            }
+        }
+
+        if (matchingPair) {
+            break;
+        }
+    }
+
+    if (!matchingPair) {
+        alert("Tidak ada pasangan kartu yang cocok!");
+        return;
+    }
+
+    matchingPair[0].classList.add('flipped');
+    flippedCards.push(matchingPair[0]);
+
+    matchingPair[1].classList.add('flipped');
+    flippedCards.push(matchingPair[1]);
+
+    setTimeout(() => {
+        checkMatch();
+        solving = false;
+    }, 1000);
+}
+
+    function solveAll() {
+        const unmatchedCards = Array.from(cards).filter(card => !matchedCards.includes(card) && !flippedCards.includes(card));
+
+        if (unmatchedCards.length < 2) {
+            alert("Tidak ada pasangan kartu yang tersisa!");
+            return;
+        }
+
+        solving = true;
+        let matchingPairs = [];
+
+        for (let i = 0; i < unmatchedCards.length; i++) {
+            for (let j = i + 1; j < unmatchedCards.length; j++) {
+                if (unmatchedCards[i].dataset.img === unmatchedCards[j].dataset.img) {
+                    matchingPairs.push([unmatchedCards[i], unmatchedCards[j]]);
+                    break;
+                }
+            }
+        }
+
+        if (matchingPairs.length === 0) {
+            alert("Tidak ada pasangan kartu yang cocok!");
+            return;
+        }
+
+        function revealNextPair(pairIndex) {
+            const [hintCard1, hintCard2] = matchingPairs[pairIndex];
+
+            hintCard1.classList.add('flipped');
+            flippedCards.push(hintCard1);
+
+            hintCard2.classList.add('flipped');
+            flippedCards.push(hintCard2);
+
+            setTimeout(() => {
+                checkMatch();
+                if (pairIndex < matchingPairs.length - 1) {
+                    revealNextPair(pairIndex + 1);
+                } else {
+                    alert(`Anda telah menyelesaikan ${matchingPairs.length} pasangan!`);
+                    status = "Surrender"; 
+                    updateStatus();
+                }
+            }, 1000);
+            
+        }
+        revealNextPair(0);
+        
+    }
+
+});
+</script>
+
+<!-- Tambahkan elemen untuk menampilkan skor -->
+<div id="score">Skor: 0</div>
+
+
+{% endblock %}

@@ -1,3 +1,6 @@
+import os
+import random
+import shutil
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
@@ -20,7 +23,6 @@ def grayscale():
         new_arr = (new_arr/3).astype('uint8')
         new_img = Image.fromarray(new_arr)
         new_img.save("static/img/img_now.jpg")
-
 
 def is_grey_scale(img_path):
     im = Image.open(img_path).convert('RGB')
@@ -525,3 +527,216 @@ def generate_and_apply_kernel(kernel_type, kernel_size):
         raise ValueError("Invalid kernel type. Use 'lowpass', 'highpass', or 'bandpass'.")
 
     apply_filter("static/img/img_now.jpg", kernel, kernel_type)
+
+# batas game
+def load_images_from_folder(folder_path):
+    images = []
+    for filename in os.listdir(folder_path):
+        if filename.endswith(".jpg"):
+            img_path = os.path.join(folder_path, filename)
+            images.append(img_path)
+    return images
+
+def duplicate_images(images):
+    for img_path in images:
+        img_name, img_ext = os.path.splitext(os.path.basename(img_path))
+        new_img_path = os.path.join("static/game/", f"{img_name}_copy{img_ext}")
+        # Cek apakah file salinan sudah ada di folder tujuan
+        if not os.path.exists(img_path):
+            # Jika belum ada, salin gambar
+            shutil.copy2(img_path, new_img_path)
+
+def combine_and_shuffle(images):
+    paired_images = images + images
+    random.shuffle(paired_images)
+    return paired_images
+
+def game_grayscale():
+    if not is_grey_scale("static/img/img_normal.jpg"):
+        img = Image.open("static/img/img_normal.jpg")
+        img_arr = np.asarray(img)
+        r = img_arr[:, :, 0]
+        g = img_arr[:, :, 1]
+        b = img_arr[:, :, 2]
+        new_arr = r.astype(int) + g.astype(int) + b.astype(int)
+        new_arr = (new_arr/3).astype('uint8')
+        new_img = Image.fromarray(new_arr)
+        new_img.save("static/game/img_grayscale.jpg")
+
+def game_mean_blur():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = np.asarray(img, dtype=np.uint8)
+    kernel = np.ones((10, 10), np.float32) / (10**2)
+    blur = cv2.filter2D(src=img_arr, ddepth=-1, kernel=kernel)
+    new_img = Image.fromarray(blur)
+    new_img.save("static/game/img_mean_blur.jpg")
+
+def game_sepia_tone():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = np.asarray(img)
+
+    # Matriks transformasi untuk sepia
+    kernel = np.array([[0.272, 0.534, 0.131],
+                       [0.349, 0.686, 0.168],
+                       [0.393, 0.769, 0.189]])
+
+    # Terapkan transformasi
+    sepia_image = cv2.transform(img_arr, kernel)
+
+    # Batasi nilai piksel ke 255
+    sepia_image = np.where(sepia_image > 255, 255, sepia_image)
+
+    new_img = Image.fromarray(sepia_image.astype('uint8'))
+    new_img.save("static/game/img_sepia_tone.jpg")
+
+def game_edge_detection():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+
+    # Terapkan filter deteksi tepi
+    edges = cv2.Canny(img_arr, 100, 200)
+
+    new_img = Image.fromarray(edges)
+    new_img.save("static/game/img_edge_detection.jpg")
+
+def game_blue():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = np.array(img)
+
+    # Buat salinan gambar agar dapat dimodifikasi
+    new_img_arr = np.copy(img_arr)
+
+    # Tingkatkan saluran warna biru (B) dan kurangi saluran merah (R) dan hijau (G)
+    new_img_arr[:, :, 0] = new_img_arr[:, :, 0] * 0.8  # Saluran merah dikurangi
+    new_img_arr[:, :, 1] = new_img_arr[:, :, 1] * 0.8  # Saluran hijau dikurangi
+    new_img_arr[:, :, 2] = 100  # Saluran biru ditingkatkan
+
+    # Pastikan nilai piksel tetap dalam rentang 0-255
+    new_img_arr = np.clip(new_img_arr, 0, 255)
+
+    new_img = Image.fromarray(new_img_arr.astype('uint8'))
+    new_img.save("static/game/img_blue.jpg")
+
+
+def game_emboss():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+
+    # Matriks kernel untuk emboss
+    kernel = np.array([[-2,-1,0], [-1,1,1], [0,1,2]])
+
+    # Terapkan filter
+    embossed = cv2.filter2D(img_arr, -1, kernel)
+
+    new_img = Image.fromarray(embossed)
+    new_img.save("static/game/img_emboss.jpg")
+
+def game_invert_colors():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = 255 - np.asarray(img)
+    new_img = Image.fromarray(img_arr.astype('uint8'))
+    new_img.save("static/game/img_invert_colors.jpg")
+
+def game_purple_tint():
+    img = Image.open("static/img/img_normal.jpg")
+
+    # Matriks transformasi untuk mengubah nuansa ke ungu
+    purple_tint_matrix = [
+        [0.7, 0.3, 0.7],
+        [0.3, 0.6, 0.3],
+        [0.4, 0.4, 0.9]
+    ]
+
+    img = img.convert("RGB")  # Pastikan gambar dalam mode warna RGB
+    width, height = img.size
+    pixels = img.load()
+
+    for py in range(height):
+        for px in range(width):
+            r, g, b = img.getpixel((px, py))
+
+            new_r = int(r * purple_tint_matrix[0][0] + g * purple_tint_matrix[0][1] + b * purple_tint_matrix[0][2])
+            new_g = int(r * purple_tint_matrix[1][0] + g * purple_tint_matrix[1][1] + b * purple_tint_matrix[1][2])
+            new_b = int(r * purple_tint_matrix[2][0] + g * purple_tint_matrix[2][1] + b * purple_tint_matrix[2][2])
+
+            # Pastikan nilai tidak melebihi 255
+            new_r = min(new_r, 255)
+            new_g = min(new_g, 255)
+            new_b = min(new_b, 255)
+
+            pixels[px, py] = (new_r, new_g, new_b)
+
+    img.save("static/game/img_purple_tint.jpg")
+
+def game_bilateral():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2BGR)
+
+    # Terapkan filter bilateral
+    bilateral = cv2.bilateralFilter(img_arr, 9, 75, 75)
+
+    new_img = Image.fromarray(bilateral)
+    new_img.save("static/game/img_bilateral.jpg")
+
+def game_pencil_sketch():
+    img = Image.open("static/img/img_normal.jpg")
+    img_gray = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2GRAY)
+
+    # Invert warna gambar
+    inverted_img = 255 - img_gray
+
+    # Terapkan Gaussian Blur
+    blurred_img = cv2.GaussianBlur(inverted_img, (21, 21), 0)
+
+    # Gabungkan gambar asli dan gambar blur
+    pencil_sketch = cv2.divide(255 - blurred_img, 255, scale=256)
+
+    new_img = Image.fromarray(pencil_sketch)
+    new_img.save("static/game/img_pencil_sketch.jpg")
+
+def game_gamma_correction():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = np.asarray(img)
+
+    # Koreksi gamma
+    gamma = 2.0
+    corrected_img = 255 * (img_arr / 255) ** (1 / gamma)
+
+    new_img = Image.fromarray(corrected_img.astype('uint8'))
+    new_img.save("static/game/img_gamma_correction.jpg")
+
+def game_solarize():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = 255 - np.asarray(img)
+
+    # Terapkan thresholding
+    threshold = 128
+    img_arr[img_arr > threshold] = 255 - img_arr[img_arr > threshold]
+
+    new_img = Image.fromarray(img_arr.astype('uint8'))
+    new_img.save("static/game/img_solarize.jpg")
+
+def game_orange():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = np.array(img)
+
+    # Buat salinan gambar agar dapat dimodifikasi
+    new_img_arr = np.copy(img_arr)
+
+    # Kurangi saluran warna merah (R) dan tingkatkan saluran biru (B) dan hijau (G)
+    new_img_arr[:, :, 0] = 100  # Saluran merah maksimum
+    new_img_arr[:, :, 1] = new_img_arr[:, :, 1] * 0.5  # Saluran hijau setengah
+    new_img_arr[:, :, 2] = new_img_arr[:, :, 2] * 0  # Saluran biru minimum
+
+    new_img = Image.fromarray(new_img_arr)
+    new_img.save("static/game/img_orange.jpg")
+
+def game_green_tint():
+    img = Image.open("static/img/img_normal.jpg")
+    img_arr = np.array(img, dtype=np.uint8)  # Create a copy of the array
+
+    img_arr[:, :, 1] = img_arr[:, :, 1] + 50  # Modify the copy
+
+    new_img = Image.fromarray(img_arr)
+    new_img.save("static/game/img_green_tint.jpg")
+

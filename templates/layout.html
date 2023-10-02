@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css') }}">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-
+	
 	<style>
 		.custom-button {
 			font-family: Arial, Helvetica, sans-serif;
@@ -41,11 +41,45 @@
 			padding-top: 10px;
 			padding-bottom: 10px;
 		}
-
+	
 		.custom-input {
 			width: 50%; 
 			height: 38px; 
 			padding-left: 10px;
+		}
+	
+		.game-board {
+			display: flex;
+			flex-wrap: wrap;
+			max-width: 600px;
+			margin: auto;
+			margin-top: 20px;
+		}
+	
+		.card {
+			width: 100px;
+			height: 100px;
+			margin: 10px;
+			background: #f0f0f0;
+			border: 2px solid #ccc;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 24px;
+			cursor: pointer;
+			transition: transform 0.3s;
+		}
+	
+		.card.flipped {
+			transform: rotateY(180deg);
+		}
+	
+		.hidden-image {
+			display: none;
+		}
+	
+		.card.flipped .hidden-image {
+			display: block;
 		}
 	</style>
 
@@ -69,6 +103,65 @@
 	<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+	<!-- <script>
+		const cards = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F'];
+		let flippedCards = [];
+		let matchedCards = [];
+
+		function shuffle(array) {
+			for (let i = array.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[array[i], array[j]] = [array[j], array[i]];
+			}
+		}
+
+		function createCard(cardValue) {
+			const card = document.createElement('div');
+			card.classList.add('card');
+			card.textContent = cardValue;
+			card.addEventListener('click', () => flipCard(card));
+			return card;
+		}
+
+		function flipCard(card) {
+			if (flippedCards.length < 2 && !flippedCards.includes(card) && !matchedCards.includes(card)) {
+				card.classList.add('flipped');
+				flippedCards.push(card);
+
+				if (flippedCards.length === 2) {
+					setTimeout(checkMatch, 1000);
+				}
+			}
+		}
+
+		function checkMatch() {
+			const [card1, card2] = flippedCards;
+			if (card1.textContent === card2.textContent) {
+				matchedCards.push(card1, card2);
+				flippedCards = [];
+
+				if (matchedCards.length === cards.length) {
+					alert('Selamat! Anda menang!');
+				}
+			} else {
+				card1.classList.remove('flipped');
+				card2.classList.remove('flipped');
+				flippedCards = [];
+			}
+		}
+
+		function resetGame() {
+			matchedCards = [];
+			flippedCards = [];
+			const gameBoard = document.getElementById('gameBoard');
+			gameBoard.innerHTML = '';
+			shuffle(cards);
+			cards.forEach(cardValue => gameBoard.appendChild(createCard(cardValue)));
+		}
+
+		// Initialize game on page load
+		window.onload = resetGame;
+	</script> -->
 </body>
 
 </html>

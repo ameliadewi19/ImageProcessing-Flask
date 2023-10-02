@@ -114,6 +114,29 @@ def normal():
     copyfile("static/img/img_normal.jpg", "static/img/img_now.jpg")
     return render_template("uploaded.html", file_path="img/img_now.jpg")
 
+@app.route("/game_card", methods=["POST"])
+@nocache
+def game_card():
+    image_processing.game_grayscale()
+    image_processing.game_mean_blur()
+    image_processing.game_sepia_tone()
+    image_processing.game_edge_detection()
+    image_processing.game_blue()
+    image_processing.game_emboss()
+    image_processing.game_invert_colors()
+    image_processing.game_purple_tint()
+    image_processing.game_bilateral()
+    image_processing.game_pencil_sketch()
+    image_processing.game_green_tint()
+    image_processing.game_gamma_correction()
+    image_processing.game_solarize()
+    image_processing.game_orange()
+    folder_path = "static/game/"
+    images = image_processing.load_images_from_folder(folder_path)
+    image_processing.duplicate_images(images)
+    paired_images = image_processing.combine_and_shuffle(images)
+    return render_template("game_card.html", paired_images=paired_images)
+
 
 @app.route("/grayscale", methods=["POST"])
 @nocache
